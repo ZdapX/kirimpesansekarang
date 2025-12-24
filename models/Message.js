@@ -12,7 +12,8 @@ const Message = {
     await redis.lpush(`msgs:${to}`, JSON.stringify(msgData));
   },
   get: async (username) => {
-    return await redis.lrange(`msgs:${username}`, 0, -1);
+    const data = await redis.lrange(`msgs:${username}`, 0, -1);
+    return data || [];
   }
 };
 
