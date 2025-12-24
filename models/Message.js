@@ -8,11 +8,17 @@ const redis = new Redis({
 
 const Message = {
   send: async (to, text) => {
-    const msgData = { text, time: new Date().toISOString() };
-    await redis.lpush(`msgs:${to}`, JSON.stringify(msgData));
+    const cleanTo = to.trim().toLowerCase();
+    // Simpan langsung sebagai object, Upstash akan otomatis mengurus JSON-nya
+    const msgData = { 
+      text: text, 
+      time: new Date().toISOString() 
+    };
+    await redis.lpush(`msgs:${cleanTo}`, msgData);
   },
   get: async (username) => {
-    const data = await redis.lrange(`msgs:${username}`, 0, -1);
+    const cleanUser = username.trim().toLowerCase();
+    const data = await redis.lrange(`msgs:${cleanUser}`, 0, -1);
     return data || [];
   }
 };
