@@ -9,7 +9,6 @@ const redis = new Redis({
 const Message = {
   send: async (to, text) => {
     const cleanTo = to.trim().toLowerCase();
-    // Simpan langsung sebagai object, Upstash akan otomatis mengurus JSON-nya
     const msgData = { 
       text: text, 
       time: new Date().toISOString() 
@@ -20,6 +19,12 @@ const Message = {
     const cleanUser = username.trim().toLowerCase();
     const data = await redis.lrange(`msgs:${cleanUser}`, 0, -1);
     return data || [];
+  },
+  // FITUR BARU: Hapus Pesan
+  delete: async (username, msgObjectString) => {
+    const cleanUser = username.trim().toLowerCase();
+    // Menghapus pesan yang isinya persis sama
+    await redis.lrem(`msgs:${cleanUser}`, 0, msgObjectString);
   }
 };
 
