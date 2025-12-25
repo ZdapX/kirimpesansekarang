@@ -4,43 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Inbox - NGL Clone</title>
+    <title>Inbox - NGL</title>
 </head>
-<body class="bg-black text-white p-6 font-sans">
-    <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-2xl font-black tracking-tighter">INBOX : @<%= user %></h1>
-            <a href="/logout" class="bg-red-600/20 text-red-500 px-4 py-2 rounded-full text-xs font-bold border border-red-600/30">LOGOUT</a>
+<body class="bg-black text-white p-4 md:p-10 font-sans">
+    <div class="max-w-2xl mx-auto">
+        
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black italic">INBOX</h1>
+            <a href="/logout" class="text-xs font-bold text-gray-500 border border-gray-800 px-4 py-2 rounded-full uppercase">Keluar</a>
         </div>
 
-        <!-- Link Box -->
-        <div class="bg-[#111] border border-cyan-900/50 p-6 rounded-[2rem] mb-10">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-2">Link Profile Anda:</p>
-            <div class="flex items-center justify-between bg-black p-4 rounded-2xl border border-[#222]">
-                <code class="text-cyan-400 text-sm">yukkirimpesan.vercel.app/u/<%= user %></code>
+        <!-- FITUR BARU: Copy Link Box -->
+        <div class="bg-[#0a0a0a] border border-[#1a1a1a] p-6 rounded-[2rem] mb-8 text-center">
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Link Profile Kamu</p>
+            <div class="flex flex-col gap-3">
+                <div id="linkText" class="bg-black p-4 rounded-xl border border-[#222] text-red-500 font-mono text-xs overflow-hidden truncate">
+                    https://yukkirimpesan.vercel.app/u/<%= user %>
+                </div>
+                <button onclick="copyLink()" id="btnCopy" class="bg-white text-black text-[10px] font-black py-3 rounded-xl uppercase tracking-widest hover:bg-red-500 hover:text-white transition">
+                    Salin Link
+                </button>
             </div>
         </div>
 
-        <!-- Messages Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- List Pesan -->
+        <div class="space-y-4">
             <% if(messages.length == 0) { %>
-                <div class="col-span-full text-center py-20">
-                    <p class="text-gray-600 italic">Belum ada pesan yang masuk...</p>
+                <div class="text-center py-20">
+                    <div class="text-4xl mb-4">📩</div>
+                    <p class="text-gray-600 text-sm">Belum ada pesan anonim...</p>
                 </div>
             <% } %>
 
             <% messages.forEach(m => { %>
-                <!-- 'm' sudah otomatis jadi object, tidak perlu JSON.parse lagi -->
-                <div class="bg-[#111] border border-[#222] p-6 rounded-[2rem] hover:border-cyan-500/50 transition-all group">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="bg-cyan-500 w-2 h-2 rounded-full shadow-[0_0_10px_cyan]"></span>
-                        <span class="text-[10px] text-gray-600 font-mono"><%= new Date(m.time).toLocaleTimeString() %></span>
-                    </div>
-                    <p class="text-lg font-medium leading-relaxed">"<%= m.text %>"</p>
-                    <p class="text-[9px] text-gray-700 mt-4 uppercase tracking-[0.2em] font-bold"><%= new Date(m.time).toDateString() %></p>
+            <div class="bg-[#0d0d0d] border border-[#1a1a1a] p-6 rounded-[2rem] relative group">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[9px] text-gray-600 font-bold uppercase tracking-tighter"><%= new Date(m.time).toLocaleString() %></span>
+                    
+                    <!-- FITUR BARU: Tombol Hapus -->
+                    <form action="/delete-message" method="POST" onsubmit="return confirm('Hapus pesan ini?')">
+                        <input type="hidden" name="msgRaw" value='<%= JSON.stringify(m) %>'>
+                        <button class="text-gray-800 hover:text-red-600 transition text-[10px] font-bold uppercase tracking-widest">Hapus</button>
+                    </form>
                 </div>
+                <p class="text-lg font-semibold leading-snug">"<%= m.text %>"</p>
+            </div>
             <% }) %>
         </div>
     </div>
+
+    <script>
+        function copyLink() {
+            const link = document.getElementById('linkText').innerText.trim();
+            navigator.clipboard.writeText(link);
+            const btn = document.getElementById('btnCopy');
+            btn.innerText = "TERSALIN! ✅";
+            btn.classList.add('bg-green-500', 'text-white');
+            setTimeout(() => {
+                btn.innerText = "SALIN LINK";
+                btn.classList.remove('bg-green-500', 'text-white');
+            }, 2000);
+        }
+    </script>
 </body>
 </html>
