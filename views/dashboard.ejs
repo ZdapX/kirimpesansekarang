@@ -4,118 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Library untuk convert HTML ke Gambar -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <title>Inbox - NGL</title>
 </head>
-<body class="bg-black text-white p-4 md:p-10 font-sans">
+<body class="bg-black text-white p-4 md:p-10">
     <div class="max-w-2xl mx-auto">
-        
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-black italic">INBOX</h1>
-            <a href="/logout" class="text-xs font-bold text-gray-500 border border-gray-800 px-4 py-2 rounded-full uppercase">Keluar</a>
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-black italic tracking-tighter">INBOX</h1>
+            <a href="/logout" class="text-[10px] border border-gray-700 px-4 py-2 rounded-full font-bold opacity-50">LOGOUT</a>
         </div>
 
-        <!-- Copy Link Box -->
-        <div class="bg-[#0a0a0a] border border-[#1a1a1a] p-6 rounded-[2rem] mb-8 text-center">
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-3">Link Profile Kamu</p>
-            <div class="flex flex-col gap-3">
-                <div id="linkText" class="bg-black p-4 rounded-xl border border-[#222] text-red-500 font-mono text-xs overflow-hidden truncate">
-                    https://yukkirimpesan.vercel.app/u/<%= user %>
-                </div>
-                <button onclick="copyLink()" id="btnCopy" class="bg-white text-black text-[10px] font-black py-3 rounded-xl uppercase tracking-widest hover:bg-red-500 hover:text-white transition">
-                    Salin Link
-                </button>
-            </div>
+        <!-- Copy Link -->
+        <div class="bg-[#0a0a0a] border border-[#1a1a1a] p-6 rounded-[2.5rem] mb-10 text-center">
+            <p class="text-[10px] text-gray-600 uppercase tracking-[0.2em] mb-3">Link Profile Kamu</p>
+            <button onclick="copyLink()" id="btnCopy" class="w-full bg-[#111] p-4 rounded-2xl text-red-500 font-mono text-xs border border-[#222]">
+                yukkirimpesan.vercel.app/u/<%= user %>
+            </button>
         </div>
 
-        <!-- List Pesan -->
+        <!-- Messages Grid -->
         <div class="grid grid-cols-2 gap-3">
             <% if(messages.length == 0) { %>
-                <div class="col-span-2 text-center py-20">
-                    <p class="text-gray-600 text-sm">Belum ada pesan...</p>
-                </div>
+                <p class="col-span-2 text-center text-gray-700 py-20">Kosong...</p>
             <% } %>
 
-            <% messages.forEach((m, index) => { %>
-            <!-- Klik kartu untuk buka preview -->
-            <div onclick="openPreview('<%= m.text.replace(/'/g, "\\'") %>')" class="cursor-pointer bg-[#0d0d0d] border border-[#1a1a1a] p-5 rounded-[1.5rem] relative active:scale-95 transition">
+            <% messages.forEach(m => { %>
+            <div onclick="openPreview('<%= m.text.replace(/'/g, "\\'") %>')" class="bg-[#0d0d0d] border border-[#1a1a1a] p-5 rounded-[2rem] active:scale-95 transition cursor-pointer relative">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="w-2 h-2 bg-red-600 rounded-full"></span>
-                    <form action="/delete-message" method="POST" onsubmit="event.stopPropagation(); return confirm('Hapus?')">
-                        <input type="hidden" name="msgRaw" value='<%= JSON.stringify(m) %>'>
+                    <div class="w-2 h-2 bg-red-600 rounded-full shadow-[0_0_10px_red]"></div>
+                    <form action="/delete-message" method="POST" onsubmit="event.stopPropagation()">
+                        <input type="hidden" name="msgId" value="<%= m._id %>">
                         <button class="text-[8px] text-gray-800 font-bold uppercase">Hapus</button>
                     </form>
                 </div>
-                <p class="text-sm font-medium line-clamp-3">"<%= m.text %>"</p>
+                <p class="text-sm font-semibold line-clamp-3">"<%= m.text %>"</p>
             </div>
             <% }) %>
         </div>
     </div>
 
-    <!-- MODAL PREVIEW (ALA INSTAGRAM STORY) -->
-    <div id="modalPreview" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col items-center justify-center p-6">
-        <button onclick="closePreview()" class="absolute top-10 right-10 text-white font-bold text-xl">&times;</button>
-        
-        <!-- Area yang akan di-download -->
-        <div id="captureArea" class="w-full max-w-[350px] aspect-[9/16] bg-red-600 rounded-[3rem] p-10 flex flex-col items-center justify-center text-center shadow-2xl relative overflow-hidden">
-            <!-- Dekorasi background -->
-            <div class="absolute top-10 left-10 text-white/20 text-6xl font-black">“</div>
-            
-            <div class="bg-white text-black p-8 rounded-[2rem] shadow-xl w-full">
-                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-4">kirim pesan anonim!</p>
-                <p id="previewText" class="text-xl font-bold leading-tight text-black">"Contoh Pesan"</p>
+    <!-- PREVIEW MODAL -->
+    <div id="modal" class="hidden fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-6">
+        <div id="captureArea" class="w-full max-w-[340px] aspect-[9/16] bg-red-600 rounded-[3rem] p-10 flex flex-col items-center justify-center text-center relative shadow-2xl">
+            <div class="bg-white text-black p-8 rounded-[2.5rem] w-full shadow-2xl">
+                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4">kirim pesan anonim!</p>
+                <p id="previewText" class="text-xl font-bold leading-tight">"..."</p>
             </div>
-
-            <div class="mt-10 text-white">
-                <p class="text-xs font-black tracking-tighter italic">NGL.LINK</p>
-                <p class="text-[8px] uppercase tracking-[0.3em] opacity-50">yukkirimpesan.vercel.app</p>
+            <div class="mt-8">
+                <p class="text-white font-black italic tracking-tighter">NGL.LINK</p>
+                <p class="text-[8px] text-white/50 uppercase tracking-[0.3em]">yukkirimpesan.vercel.app</p>
             </div>
         </div>
-
-        <!-- Tombol Download -->
-        <button onclick="downloadImage()" class="mt-8 bg-white text-black px-10 py-4 rounded-full font-black uppercase text-xs tracking-widest hover:bg-red-500 hover:text-white transition">
-            Download Gambar & Simpan
-        </button>
-        <p class="mt-4 text-gray-500 text-[10px]">Siap untuk dibagikan ke Instagram Story!</p>
+        
+        <button onclick="downloadImg()" class="mt-10 bg-white text-black px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-xl">Download Story</button>
+        <button onclick="document.getElementById('modal').classList.add('hidden')" class="mt-4 text-gray-500 text-xs uppercase font-bold">Tutup</button>
     </div>
 
     <script>
-        function openPreview(text) {
-            document.getElementById('previewText').innerText = `"${text}"`;
-            document.getElementById('modalPreview').classList.remove('hidden');
+        function openPreview(txt) {
+            document.getElementById('previewText').innerText = `"${txt}"`;
+            document.getElementById('modal').classList.remove('hidden');
         }
 
-        function closePreview() {
-            document.getElementById('modalPreview').classList.add('hidden');
-        }
-
-        function downloadImage() {
+        function downloadImg() {
             const node = document.getElementById('captureArea');
-            const btn = event.target;
-            btn.innerText = "MENGOLAH...";
-
-            htmlToImage.toPng(node)
-                .then(function (dataUrl) {
-                    const link = document.createElement('a');
-                    link.download = `NGL-Pesan-${Date.now()}.png`;
-                    link.href = dataUrl;
-                    link.click();
-                    btn.innerText = "DOWNLOAD BERHASIL!";
-                    setTimeout(() => btn.innerText = "DOWNLOAD GAMBAR", 2000);
-                })
-                .catch(function (error) {
-                    console.error('Oops, something went wrong!', error);
-                    alert("Gagal mendownload gambar");
-                });
+            htmlToImage.toPng(node).then(dataUrl => {
+                const link = document.createElement('a');
+                link.download = 'ngl-story.png';
+                link.href = dataUrl;
+                link.click();
+            });
         }
 
         function copyLink() {
-            const link = document.getElementById('linkText').innerText.trim();
-            navigator.clipboard.writeText(link);
             const btn = document.getElementById('btnCopy');
-            btn.innerText = "TERSALIN! ✅";
-            setTimeout(() => btn.innerText = "SALIN LINK", 2000);
+            navigator.clipboard.writeText(btn.innerText.trim());
+            btn.innerText = "TERSALIN!";
+            setTimeout(() => { btn.innerText = "yukkirimpesan.vercel.app/u/<%= user %>" }, 2000);
         }
     </script>
 </body>
